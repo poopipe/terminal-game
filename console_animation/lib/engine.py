@@ -1,15 +1,18 @@
-import sys 
 import os
 import threading 
 import time
 
+import random
+
 from .types import Entity, VecT
+from .entities import Player
+from .entities import LandMine
 from pynput import keyboard
 
 class Screen:
     def __init__(self):
         self.width = os.get_terminal_size().columns
-        self.height = os.get_terminal_size().lines
+        self.height = os.get_terminal_size().lines - 2      # keep 2 lines for status - bin later
         print(self.height)
 
     def clear(self):
@@ -36,8 +39,10 @@ class Game:
         self.fps = 60
         self.screen = Screen()
         self.entities = []
-        self.player = Entity('player', '\uee25', self)
+        self.player = Player('player', self)
         self.input_listener = self._get_input_listener()
+        self.frame_counter = 0
+        self.score = 0
 
     def _get_input_listener(self) -> keyboard.Listener:
         return keyboard.Listener(on_press = self.on_press, on_release=self.on_release)
@@ -61,34 +66,59 @@ class Game:
         except Exception as e:
             pass
 
-    def add_entity(self, name:str, glyph:str, position:VecT):
-        e = Entity(name, glyph, self)
+    def add_entity(self, e:Entity, position:VecT):
         e.position = position
         self.entities.append(e)
 
-    
+    def check_player_collisions(self):
+        collision_objects = [x for x in self.entities if x.position == self.player.position]
+        for o in collision_objects:
+            self.entities.remove(o)
+            result = self.player.collide(o)
+
+    def process_entities(self):
+        # handle behaviours
+        [x.behave() for x in self.entities]
+
+    def spawn_entities(self):
+        if not self.frame_counter % 20 == 0:
+            return None
+
+        if len(self.entities) <= 10:
+            chance = random.randint(0, 9)
+            if chance >= 8:
+                random_y = random.randint(1, self.screen.height-1)
+                self.add_entity(LandMine('mine_a', self), VecT(self.screen.width, random_y))
+
+
     def main_loop(self):
         while self.run:
             # clear it all out
             self.screen.clear()
             frame_buffer = self.screen.fill()
+            self.spawn_entities()
+            self.process_entities()
+            # check collisions
+            self.check_player_collisions()
 
             # draw other entities
-
             for entity in self.entities:
                 i = entity.get_buffer_index()
                 frame_buffer = frame_buffer[:i] + entity.glyph + frame_buffer[i + 1:]
 
-
             # draw the player
             i = self.player.get_buffer_index() 
             frame_buffer = frame_buffer[:i] + self.player.glyph + frame_buffer[i + 1:]
+
             # render the frame
             self.screen.render_frame(frame_buffer)
-            print('\uee25', self.player.position)
-
+            print('\uee25', self.score)
+            
+            self.frame_counter += 1
             time.sleep(1.0 / float(self.fps))
 
+        print('YOU DIED, LOSER')
+    # 29 8
     def init(self):
         ''' do the beginning stuff '''
         self.input_listener.start()
