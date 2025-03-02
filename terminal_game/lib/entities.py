@@ -13,11 +13,11 @@ class LandMine(Entity):
         # we dont want to move every frame
         if self.game.frame_counter % 10 == 0:
             self.move(VecT(-1,0))
-    
+
     def die(self):
         self.game.score += 10
         self.game.entities.remove(self)
-        
+
 
 class Player(Entity):
     def __init__(self, name, game):
@@ -27,6 +27,10 @@ class Player(Entity):
         print(f'player collided with{entity}')
         if isinstance(entity, LandMine):
            self.die()
+
+    def behave(self):
+        if self.game.frame_counter % 10 == 0:
+            self.move(VecT(0, 1))
 
     def die(self):
         #self.game.entities.remove(self)

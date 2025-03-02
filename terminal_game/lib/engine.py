@@ -9,6 +9,8 @@ from .types import Entity, VecT
 from .entities import Player
 from .entities import LandMine
 from pynput import keyboard
+from .patterns import *
+
 
 class GameState(Enum):
     # NOTE: unused atm - intended to make handling 
@@ -97,18 +99,23 @@ class Game:
 
     def process_entities(self):
         # handle behaviours
+        self.player.behave()
         [x.behave() for x in self.entities]
 
     def spawn_entities(self):
-        # spawn rate here
-        if not self.frame_counter % 20 == 0:
+        if not self.frame_counter % 120 == 0:
             return None
-        # spawn chance here
-        if len(self.entities) <= 10:
-            chance = random.randint(0, 9)
-            if chance >= 8:
-                random_y = random.randint(1, self.screen.height-1)
-                self.add_entity(LandMine('mine_a', self), VecT(self.screen.width, random_y))
+
+        random_len = random.randint(3, self.screen.height - 2)
+        entities = LineVerticalPattern(self, random_len).entities
+
+        random_y = random.randint(1, self.screen.height - random_len)
+
+        for e in entities:
+            # TODO: do something about the side_length upsetting the LSP
+            e.side_length = random_len
+            e.position = e.position + VecT(self.screen.width - 1, self.screen.height - e.side_length)
+            self.add_entity(e, e.position)
 
     def menu_loop(self):
         self.screen.clear()
@@ -125,7 +132,7 @@ class Game:
     def game_loop(self):
         # clear it all out
         self.screen.clear()
-        frame_buffer = self.screen.fill(' ')
+        frame_buffer = self.screen.fill('-')
         self.spawn_entities()
         self.process_entities()
         # check collisions
@@ -142,7 +149,7 @@ class Game:
 
         # render the frame
         self.screen.render_frame(frame_buffer)
-        print('\uee25', self.score)
+        print('\uee25', self.score, len(self.entities))
 
         # NOTE: Frame counter is used to time spawns
         self.frame_counter += 1
