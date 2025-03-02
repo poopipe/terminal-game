@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "console-animation"
+name = "terminal-game"
 version = "0.1.0"
 description = ""
 authors = ["poopipe <ill_ness@hotmail.com>"]

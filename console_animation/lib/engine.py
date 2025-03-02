@@ -11,8 +11,11 @@ from .entities import LandMine
 from pynput import keyboard
 
 class GameState(Enum):
+    # NOTE: unused atm - intended to make handling 
+    #       the various modes a bit easier 
     MENU = 0
     GAME = 1
+    DEAD = 2
 
 
 class Screen:
