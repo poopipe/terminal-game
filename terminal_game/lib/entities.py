@@ -49,7 +49,7 @@ class Player(Entity):
 
         if new_position.x >= 0 and new_position.x < self.game.screen.width:
             self.position.x = new_position.x
-        if new_position.y >= 1 and new_position.y <= self.game.screen.height:
+        if new_position.y >= 1 and new_position.y <= self.game.screen.height - 1:
             self.position.y = new_position.y
         self.move_delta = VecT(0, 0)
 
