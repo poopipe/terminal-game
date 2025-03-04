@@ -5,10 +5,12 @@ import time
 from enum import Enum
 import random
 
+from pynput import keyboard
+import pywinctl
+
 from .types import Entity, VecT
 from .entities import Player
 from .entities import LandMine
-from pynput import keyboard
 from .patterns import *
 
 
@@ -54,14 +56,20 @@ class Game:
         self.frame_counter = 0
         self.score = 0
         self.mode = 0   # menu/game/whatever - we need a way to behave differently when we're in menu/game etc
+        self.window = pywinctl.getActiveWindow().getHandle()    # get window handle on creation
+
 
     def _get_input_listener(self) -> keyboard.Listener:
-        return keyboard.Listener(on_press = self.on_press, on_release=self.on_release)
+        return keyboard.Listener(on_press = self.on_press, on_release=self.on_release, suppress=False)
 
     def on_release(self, key):
         pass 
 
     def on_press(self, key):
+        # suppress input from other windows 
+        if not pywinctl.getActiveWindow().getHandle() == self.window:
+            return None
+
         # TODO: this is acting as a pause button atm
         if key == keyboard.Key.esc:
             self.mode = 0
@@ -120,7 +128,7 @@ class Game:
         self.screen.clear()
         frame_buffer = self.screen.fill(' ')
         self.screen.render_frame(frame_buffer)
-        print('\uee25', 'Press F to start')
+        print('\uee25', 'Press F to start', self.window)
 
     def death_loop(self):
         self.screen.clear()
