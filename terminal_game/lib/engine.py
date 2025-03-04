@@ -68,13 +68,13 @@ class Game:
         try:
             if self.mode == 1:
                 if key.char == ('w'):
-                    self.player.move(VecT(0,-1))
-                if key.char == ('a'):
-                    self.player.move(VecT(-1,0))
-                if key.char == ('s'):
-                    self.player.move(VecT(0,1))
-                if key.char == ('d'):
-                    self.player.move(VecT(1,0))
+                    self.player.jump()
+                #if key.char == ('a'):
+                #    self.player.move_delta += VecT(-1,0)
+                #if key.char == ('s'):
+                #    self.player.move_delta += VecT(0,1)
+                #if key.char == ('d'):
+                #    self.player.move_delta += VecT(1,0)
             if self.mode == 0:
                 if key.char == ('f'):
                     self.mode = 1
@@ -83,6 +83,7 @@ class Game:
             if self.mode == 2:
                 if key.char == ('f'):
                     self.mode = 0
+
 
         except Exception as e:
             pass
@@ -106,20 +107,18 @@ class Game:
         if not self.frame_counter % 120 == 0:
             return None
 
-        random_len = random.randint(3, self.screen.height - 2)
-        entities = LineVerticalPattern(self, random_len).entities
+        random_len = random.randint(3, self.screen.height - 4)
 
-        random_y = random.randint(1, self.screen.height - random_len)
+        line_pattern = LineVerticalPattern(self, random_len)
+        line_entities = line_pattern.entities
 
-        for e in entities:
-            # TODO: do something about the side_length upsetting the LSP
-            e.side_length = random_len
-            e.position = e.position + VecT(self.screen.width - 1, self.screen.height - e.side_length)
+        for e in line_entities:
+            e.position = e.position + VecT(self.screen.width - 1, self.screen.height - line_pattern.side_length)
             self.add_entity(e, e.position)
 
     def menu_loop(self):
         self.screen.clear()
-        frame_buffer = self.screen.fill('_')
+        frame_buffer = self.screen.fill(' ')
         self.screen.render_frame(frame_buffer)
         print('\uee25', 'Press F to start')
 
@@ -132,7 +131,7 @@ class Game:
     def game_loop(self):
         # clear it all out
         self.screen.clear()
-        frame_buffer = self.screen.fill('-')
+        frame_buffer = self.screen.fill(' ')
         self.spawn_entities()
         self.process_entities()
         # check collisions
@@ -149,7 +148,7 @@ class Game:
 
         # render the frame
         self.screen.render_frame(frame_buffer)
-        print('\uee25', self.score, len(self.entities))
+        print('\uee25', self.score, self.player.jump_remain)
 
         # NOTE: Frame counter is used to time spawns
         self.frame_counter += 1

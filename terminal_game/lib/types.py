@@ -1,4 +1,5 @@
 from __future__ import annotations
+import math
 
 class VecT:
     ''' vec2[int] '''
@@ -89,7 +90,7 @@ class Entity:
 
     def get_buffer_index(self) -> int:
         ''' get index in buffer string for supplied position '''
-        i = self.position.y * self.game.screen.width
+        i = math.floor(self.position.y) * self.game.screen.width
         i = i - (self.game.screen.width - self.position.x)
         return i
 
