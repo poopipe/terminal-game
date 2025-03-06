@@ -21,7 +21,7 @@ class VecT:
         x = self.x * v.x
         y = self.y * v.y
         return VecT(x, y)
-    
+
     def __truediv__(self, v:VecT) -> VecT:
         ''' can only be ints so we floordiv for truediv '''
         x = self.x // v.x
@@ -39,7 +39,7 @@ class VecT:
         if self.x == v.x and self.y == v.y:
             return True
         return False
-    
+
     def __lt__(self, v:object) -> bool:
         if not isinstance(v, VecT):
             return False
@@ -53,14 +53,14 @@ class VecT:
         if self.x <=v.x and self.y <=v.y:
             return True
         return False
-    
+
     def __gt__(self, v:object) -> bool:
         if not isinstance(v, VecT):
             return False
         if self.x > v.x and self.y > v.y:
             return True
         return False
-    
+
     def __ge__(self, v:object) -> bool:
         if not isinstance(v, VecT):
             return False
@@ -101,7 +101,7 @@ class Entity:
     def behave(self):
         ''' do whatever this entity does - probably at every frame '''
         pass
-    
+
     def die(self):
         '''  '''
         pass

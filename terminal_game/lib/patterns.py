@@ -25,5 +25,9 @@ class LineVerticalPattern(Pattern):
                 e = LandMine(f'mine{y}', self.game)
                 e.position = VecT(0,y)
                 entities.append(e)
+                e = LandMine(f'mine{y}', self.game)
+                e.position = VecT(1,y)
+                entities.append(e)
+                
         return entities
 

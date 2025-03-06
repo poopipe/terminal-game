@@ -5,7 +5,7 @@ from .types import Entity, VecT
 
 class LandMine(Entity):
     def __init__(self, name, game):
-        super().__init__(name, 'x', game)
+        super().__init__(name, '█', game)
 
     def behave(self):
         if self.position.x <= 0:
@@ -61,12 +61,16 @@ class Player(Entity):
         if self.jump_cooldown_remain > 0:
             self.jump_cooldown_remain -= 1
 
+        if self.position.y >= self.game.screen.height - 1:
+            self.die()
+            return None
         self.move(VecT(0, 0))
 
 
     def die(self):
         #self.game.entities.remove(self)
         #self.glyph = 'Q'
+        self.game.save_score(self.game.score)
         self.game.mode = 2  # death screen
         self.game.reset()
 

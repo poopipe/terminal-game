@@ -8,11 +8,13 @@ import random
 from pynput import keyboard
 import pywinctl
 
+from terminal_game.lib import buffers
+
 from .types import Entity, VecT
 from .entities import Player
 from .entities import LandMine
 from .patterns import *
-
+from . import buffers
 
 class GameState(Enum):
     # NOTE: unused atm - intended to make handling 
@@ -44,6 +46,9 @@ class Screen:
     def render_frame(self, frame):
         self.clear()
         print(frame)
+
+
+
 
 class Game:
     def __init__(self):
@@ -96,6 +101,31 @@ class Game:
         except Exception as e:
             pass
 
+    def save_score(self, score:int):
+        #TODO: dont do this
+        p = 'score.txt'
+        previous_scores = []
+        max_scores = 5
+        if not os.path.exists(p):
+            with open(p, 'w') as f:
+                pass
+
+        with open(p, 'r+') as f:
+            previous_scores = f.read()
+
+            scorelist = previous_scores.split('\n')
+            scorelist = [int(x) for x in scorelist if not x == '']
+            scorelist.append(score)
+            scorelist = sorted(scorelist, reverse=True)
+
+            if len(scorelist) >= max_scores:
+                scorelist = scorelist[:max_scores]
+
+            f.seek(0)
+            f.truncate()
+            f.writelines(f'{str(x)}\n' for x in scorelist)
+        print('score saved')
+
     def add_entity(self, e:Entity, position:VecT):
         e.position = position
         self.entities.append(e)
@@ -126,15 +156,18 @@ class Game:
 
     def menu_loop(self):
         self.screen.clear()
-        frame_buffer = self.screen.fill(' ')
+        # frame_buffer = self.screen.fill(' ')
+        frame_buffer = buffers.buffer_centered(buffers.screen_menu)
         self.screen.render_frame(frame_buffer)
-        print('\uee25', 'Press F to start', self.window)
+        print('\uee25', 'F to start', 'Q to quit')
+
 
     def death_loop(self):
         self.screen.clear()
-        frame_buffer = self.screen.fill('x')
+        frame_buffer = buffers.buffer_centered(buffers.screen_death)
+        frame_buffer = buffers.buffer_centered(buffers.get_string_from_file('score.txt'))
         self.screen.render_frame(frame_buffer)
-        print('\uee25', 'DEAD, press F to return to menu')
+        print('\uee25', 'F to return to menu')
 
     def game_loop(self):
         # clear it all out
@@ -156,7 +189,7 @@ class Game:
 
         # render the frame
         self.screen.render_frame(frame_buffer)
-        print('\uee25', self.score, self.player.jump_remain)
+        print('\uee25', self.score, self.player.position)
 
         # NOTE: Frame counter is used to time spawns
         self.frame_counter += 1
@@ -173,9 +206,10 @@ class Game:
                 case _:
                     self.menu_loop()
             time.sleep(1.0 / float(self.fps))
-    
+
     def reset(self):
         self.frame_counter = 0
+        self.score = 0
         self.entities = []
         self.player.position = VecT(30, 11)
 
