@@ -37,12 +37,51 @@ def get_buffer_index(pos:VecT, width) -> int:
     return i
 
 
-def buffer_centered(s:str) -> str:
+def buffer_top_centre(s:str, v_offset=4, frame_buffer:None|str = None) -> str:
+    terminal_size = os.get_terminal_size()
+    buffer_len = terminal_size.columns * (terminal_size.lines - 3)
+    if not frame_buffer:
+        frame_buffer =''.join(' ' for x in range(buffer_len))
+
+    # process string
+    # strip leading newline if present
+    if s[0] == ['\n']:
+        s = s[1:]
+    lines = s.split('\n')
+
+    width = 0
+    height = len(lines)
+    for l in lines:
+        width = len(l) if len(l) > width else width
+
+    s_offset = VecT(
+        width // 2,
+        height // 2
+    )
+
+    origin = VecT(
+        terminal_size.columns // 2,
+        v_offset
+    )
+
+    top_left = origin - s_offset
+
+    for i in range(len(lines)):
+        for c in range(len(lines[i])):
+            p = VecT(c, i + 1) + top_left
+            idx = get_buffer_index(p, terminal_size.columns)
+            frame_buffer = frame_buffer[:idx] + lines[i][c] + frame_buffer[idx + 1:]
+
+    return frame_buffer
+
+
+def buffer_centered(s:str, frame_buffer:None|str = None) -> str:
 
     terminal_size = os.get_terminal_size()
     buffer_len = terminal_size.columns * (terminal_size.lines - 3)
-    frame_buffer =''.join(' ' for x in range(buffer_len))
-
+    if not frame_buffer:
+        frame_buffer =''.join(' ' for x in range(buffer_len))
+    
     # process string
     # strip leading newline if present
     if s[0] == ['\n']:

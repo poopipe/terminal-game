@@ -164,8 +164,9 @@ class Game:
 
     def death_loop(self):
         self.screen.clear()
-        frame_buffer = buffers.buffer_centered(buffers.screen_death)
-        frame_buffer = buffers.buffer_centered(buffers.get_string_from_file('score.txt'))
+        frame_buffer = buffers.buffer_top_centre(buffers.screen_death)
+        frame_buffer = buffers.buffer_centered(buffers.get_string_from_file('score.txt'), frame_buffer=frame_buffer)
+
         self.screen.render_frame(frame_buffer)
         print('\uee25', 'F to return to menu')
 
