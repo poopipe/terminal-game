@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 from .types import Entity, VecT
-
+from .sprites import Sprite
+from . import sprites
 
 class LandMine(Entity):
     def __init__(self, name, game):
         super().__init__(name, '█', game)
+        self.sprite = Sprite(sprites.landmine)
 
     def behave(self):
         if self.position.x <= 0:
@@ -24,15 +26,15 @@ class Player(Entity):
         super().__init__(name, '\uee25', game)
         self.move_delta: VecT = VecT(0,0)
 
-        self.jump_len:int = 4
+        self.jump_len:int = 6
         self.jump_remain:int = 0
         self.jump_cooldown:int = 30
         self.jump_cooldown_remain = 0
+        self.sprite = Sprite(sprites.player)
 
     def collide(self, entity):
-        print(f'player collided with{entity}')
         if isinstance(entity, LandMine):
-           self.die()
+            self.die()
 
     def jump(self):
         if self.jump_cooldown_remain <= 0:
@@ -68,8 +70,6 @@ class Player(Entity):
 
 
     def die(self):
-        #self.game.entities.remove(self)
-        #self.glyph = 'Q'
         self.game.save_score(self.game.score)
         self.game.mode = 2  # death screen
         self.game.reset()

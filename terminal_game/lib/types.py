@@ -1,6 +1,7 @@
 from __future__ import annotations
 import math
 
+
 class VecT:
     ''' vec2[int] '''
     def __init__(self, x:int, y:int):
@@ -79,6 +80,7 @@ class Entity:
         self.alive = True
         self.position:VecT = VecT(0, 0)
         self.glyph = glyph
+        self.sprite:Sprite|None = None 
         self.colliders = []
 
     def move(self, delta:VecT):
@@ -106,9 +108,3 @@ class Entity:
         '''  '''
         pass
 
-if __name__ == '__main__':
-
-    v = VecT(4, 5)
-    vv = VecT(2, 4)
-
-    print(v + vv)

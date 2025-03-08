@@ -1,4 +1,4 @@
-from ast import match_case
+from __future__ import annotations
 import os
 import threading 
 import time
@@ -63,6 +63,9 @@ class Game:
         self.mode = 0   # menu/game/whatever - we need a way to behave differently when we're in menu/game etc
         self.window = pywinctl.getActiveWindow().getHandle()    # get window handle on creation
 
+        # NOTE: debuggery
+        self.player_world_bounds = VecT(0,0)
+        self.debug_str = 'ass'
 
     def _get_input_listener(self) -> keyboard.Listener:
         return keyboard.Listener(on_press = self.on_press, on_release=self.on_release, suppress=False)
@@ -112,26 +115,56 @@ class Game:
 
         with open(p, 'r+') as f:
             previous_scores = f.read()
-
             scorelist = previous_scores.split('\n')
             scorelist = [int(x) for x in scorelist if not x == '']
             scorelist.append(score)
             scorelist = sorted(scorelist, reverse=True)
-
             if len(scorelist) >= max_scores:
                 scorelist = scorelist[:max_scores]
-
             f.seek(0)
             f.truncate()
             f.writelines(f'{str(x)}\n' for x in scorelist)
-        print('score saved')
 
     def add_entity(self, e:Entity, position:VecT):
         e.position = position
         self.entities.append(e)
 
     def check_player_collisions(self):
-        collision_objects = [x for x in self.entities if x.position == self.player.position]
+        # TODO: handle collisions with bounds of entity
+        player_bounds = self.player.sprite.bounds + self.player.position
+
+        collision_objects = []
+        # do bounds for player and entity overlap
+        for entity in self.entities:
+            entity_bounds = entity.sprite.bounds + entity.position
+
+            # NOTE: y coords increase down the screen
+            # bounds.y is bottom
+            # bounds.x is right
+
+            # in reference to player
+            is_fully_left = entity.position.x + 1 > player_bounds.x
+            is_fully_right = entity_bounds.x - 1 < self.player.position.x
+            is_fully_below = entity_bounds.y - 1 < self.player.position.y
+            is_fully_above = entity.position.y + 1 > player_bounds.y 
+
+            if is_fully_below:
+                self.debug_str = 'below'
+            elif is_fully_above:
+                self.debug_str = 'above'
+            elif is_fully_left:
+                self.debug_str = 'left'
+            elif is_fully_right:
+                self.debug_str = 'right'
+            else:
+                self.debug_str = 'boop'
+
+            if is_fully_right or is_fully_left or is_fully_above or is_fully_below:
+                continue
+            else:
+                collision_objects.append(entity)
+
+
         for o in collision_objects:
             self.entities.remove(o)
             result = self.player.collide(o)
@@ -145,9 +178,8 @@ class Game:
         if not self.frame_counter % 120 == 0:
             return None
 
-        random_len = random.randint(3, self.screen.height - 4)
-
-        line_pattern = LineVerticalPattern(self, random_len)
+        random_len = random.randint(3, self.screen.height - 8)
+        line_pattern = LineVerticalPattern(self, LandMine('', self), random_len)
         line_entities = line_pattern.entities
 
         for e in line_entities:
@@ -177,16 +209,14 @@ class Game:
 
         # draw other entities
         for entity in self.entities:
-            i = entity.get_buffer_index()
-            frame_buffer = frame_buffer[:i] + entity.glyph + frame_buffer[i + 1:]
+            frame_buffer = buffers.add_pattern_to_buffer(entity.sprite.string, frame_buffer, entity.position)
 
         # draw the player
-        i = self.player.get_buffer_index() 
-        frame_buffer = frame_buffer[:i] + self.player.glyph + frame_buffer[i + 1:]
-
+        frame_buffer = buffers.add_pattern_to_buffer(self.player.sprite.string, frame_buffer, self.player.position)
         # render the frame
         self.screen.render_frame(frame_buffer)
-        print('\uee25', self.score, self.player.position)
+        print('\uee25', self.score, self.player.position, self.player_world_bounds, self.debug_str)
+
 
         # NOTE: Frame counter is used to time spawns
         self.frame_counter += 1

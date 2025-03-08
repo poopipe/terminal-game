@@ -98,11 +98,14 @@ def add_pattern_to_buffer(s:str, frame_buffer:str, offset:VecT) -> str:
     lines = list_str(s)
     width, height = get_line_bounds(lines)
 
+
     for i in range(len(lines)):
         for c in range(len(lines[i])):
             p = VecT(c, i + 1) + offset 
             idx = get_buffer_index(p, terminal_size.columns)
-            frame_buffer = frame_buffer[:idx] + lines[i][c] + frame_buffer[idx + 1:]
+            # dont draw if position in line is past terminal_size.columns
+            if p.x < terminal_size.columns and p.y < terminal_size.lines - 3:
+                frame_buffer = frame_buffer[:idx] + lines[i][c] + frame_buffer[idx + 1:]
 
     return frame_buffer[:buffer_len]
 
