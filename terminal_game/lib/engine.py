@@ -28,7 +28,7 @@ class Screen:
     def __init__(self):
         self.width = os.get_terminal_size().columns
         self.height = os.get_terminal_size().lines - 2      # keep 2 lines for status - bin later
-        print(self.height)
+        self.buffer_len = self.width * self.height
 
     def clear(self):
         print("\033c", end="\033[A")
@@ -45,7 +45,7 @@ class Screen:
 
     def render_frame(self, frame):
         self.clear()
-        print(frame)
+        print(frame[:self.buffer_len])
 
 
 
@@ -162,9 +162,8 @@ class Game:
 
 
     def death_loop(self):
-        frame_buffer = buffers.buffer_top_centre(buffers.screen_death)
+        frame_buffer = buffers.buffer_h_centered(buffers.screen_death)
         frame_buffer = buffers.buffer_centered(buffers.get_string_from_file('score.txt'), frame_buffer=frame_buffer)
-
         self.screen.render_frame(frame_buffer)
         print('\uee25', 'F to return to menu')
 
