@@ -39,3 +39,4 @@ jobs:
       with:
         name: release-dists
         path: dist/
+        overwrite: true
