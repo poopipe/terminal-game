@@ -37,85 +37,74 @@ def get_buffer_index(pos:VecT, width) -> int:
     return i
 
 
-def buffer_top_centre(s:str, v_offset=4, frame_buffer:None|str = None) -> str:
+def buffer_h_centered(s:str, v_offset=4, frame_buffer:None|str = None) -> str:
+    ''' place s at horizontal centre and v_offset of frame buffer '''
     terminal_size = os.get_terminal_size()
     buffer_len = terminal_size.columns * (terminal_size.lines - 3)
     if not frame_buffer:
         frame_buffer =''.join(' ' for x in range(buffer_len))
-
-    # process string
-    # strip leading newline if present
-    if s[0] == ['\n']:
-        s = s[1:]
-    lines = s.split('\n')
-
-    width = 0
-    height = len(lines)
-    for l in lines:
-        width = len(l) if len(l) > width else width
-
-    s_offset = VecT(
-        width // 2,
-        height // 2
-    )
-
-    origin = VecT(
-        terminal_size.columns // 2,
-        v_offset
-    )
-
-    top_left = origin - s_offset
-
-    for i in range(len(lines)):
-        for c in range(len(lines[i])):
-            p = VecT(c, i + 1) + top_left
-            idx = get_buffer_index(p, terminal_size.columns)
-            frame_buffer = frame_buffer[:idx] + lines[i][c] + frame_buffer[idx + 1:]
-
-    return frame_buffer
+    lines = list_str(s)
+    width, height = get_line_bounds(lines)
+    offset = get_offset_centered(width, height, terminal_size.columns, terminal_size.lines)
+    offset = VecT(offset.x, v_offset)
+    return add_pattern_to_buffer(s, frame_buffer, offset)
 
 
 def buffer_centered(s:str, frame_buffer:None|str = None) -> str:
-
+    ''' place s in center of frame buffer '''
     terminal_size = os.get_terminal_size()
     buffer_len = terminal_size.columns * (terminal_size.lines - 3)
     if not frame_buffer:
         frame_buffer =''.join(' ' for x in range(buffer_len))
-    
+    lines = list_str(s)
+    width, height = get_line_bounds(lines)
+    offset = get_offset_centered(width, height, terminal_size.columns, terminal_size.lines)
+    return add_pattern_to_buffer(s, frame_buffer, offset)
+
+
+def get_offset_centered(pattern_width:int, pattern_height:int, buffer_width:int, buffer_height:int) -> VecT:
+    ''' get offset required to place s in centre of framebuffer '''
+    origin = VecT(
+        buffer_width// 2,
+        buffer_height // 2
+    )
+
+    offset = VecT(
+        pattern_width // 2,
+        pattern_height // 2
+    )
+    return origin - offset
+
+
+def list_str(s:str)-> list[str]:
     # process string
     # strip leading newline if present
     if s[0] == ['\n']:
         s = s[1:]
-    lines = s.split('\n')
+    return s.split('\n')
 
+def get_line_bounds(lines:list[str])->tuple[int, int]:
+    ''' return width (len of longest item in lines) and height (len of lines) '''
     width = 0
-    height = len(lines)
     for l in lines:
         width = len(l) if len(l) > width else width
+    return width, len(lines)
 
-    s_offset = VecT(
-        width // 2,
-        height // 2
-    )
-
-    origin = VecT(
-        terminal_size.columns // 2,
-        terminal_size.lines // 2
-    )
-
-    top_left = origin - s_offset
+def add_pattern_to_buffer(s:str, frame_buffer:str, offset:VecT) -> str:
+    ''' position s at offset in frame_buffer and return buffer '''
+    terminal_size = os.get_terminal_size()
+    buffer_len = terminal_size.columns * (terminal_size.lines - 3)
+    # process string
+    lines = list_str(s)
+    width, height = get_line_bounds(lines)
 
     for i in range(len(lines)):
         for c in range(len(lines[i])):
-            p = VecT(c, i + 1) + top_left
+            p = VecT(c, i + 1) + offset 
             idx = get_buffer_index(p, terminal_size.columns)
             frame_buffer = frame_buffer[:idx] + lines[i][c] + frame_buffer[idx + 1:]
 
-    return frame_buffer
-
-
-
-
+    return frame_buffer[:buffer_len]
 
 
 if __name__ == '__main__':
@@ -126,7 +115,10 @@ if __name__ == '__main__':
 │░░▀░░▀▀▀░▀▀▀░░░▀░▀░▀░▀░▀▀▀░░░▀▀░░▀▀▀░▀░▀░▀▀░│
 └────────────────────────────────────────────┘"""
 
-    print(buffer_centered(s))
+    terminal_size = os.get_terminal_size()
+    buffer_len = terminal_size.columns * (terminal_size.lines - 3)
+    frame_buffer =''.join('-' for x in range(buffer_len))
+    print(add_pattern_to_buffer(s, frame_buffer, VecT(43,24)))
 
 
     
