@@ -173,15 +173,27 @@ class Game:
         [x.behave() for x in self.entities]
 
     def spawn_entities(self):
-        if not self.frame_counter % 120 == 0:
+        #240
+        counter = random.randint(1, 4) * 60
+        if not self.frame_counter % counter == 0:
             return None
 
-        random_len = random.randint(3, self.screen.height - 8)
-        line_pattern = LineVerticalPattern(self, LandMine('', self), random_len)
-        line_entities = line_pattern.entities
+        random_len = random.randint(6, 15)
 
+        line_pattern = LineVerticalPattern(self, LandMine('', self),random_len)
+        line_entities = line_pattern.entities
+        pos_y = 0
         for e in line_entities:
-            e.position = e.position + VecT(self.screen.width - 1, self.screen.height - line_pattern.side_length)
+            e.position = e.position + VecT(self.screen.width - 1, pos_y)
+
+        bottom_len = self.screen.height - random_len - 12
+        line_pattern_other = LineVerticalPattern(self, LandMine('', self), bottom_len)
+        line_other_entities = line_pattern_other.entities
+        pos_y = self.screen.height - bottom_len 
+        for e in line_other_entities:
+            e.position = e.position + VecT(self.screen.width - 1, pos_y)
+        line_entities.extend(line_other_entities)
+        for e in line_entities:
             self.add_entity(e, e.position)
 
     def menu_loop(self):
@@ -230,6 +242,7 @@ class Game:
             time.sleep(1.0 / float(self.fps))
 
     def reset(self):
+        random.seed(69)
         self.frame_counter = 0
         self.score = 0
         self.entities = []
