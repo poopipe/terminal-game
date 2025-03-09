@@ -211,7 +211,7 @@ class Game:
         frame_buffer = buffers.add_pattern_to_buffer(self.player.sprite.string, frame_buffer, self.player.position)
         # render the frame
         self.screen.render_frame(frame_buffer)
-        #print('\uee25', self.score, self.player.position, self.player_world_bounds, self.debug_str)
+        print('\uee25', self.score, self.player.position, self.player_world_bounds, self.debug_str)
 
         # NOTE: Frame counter is used to time spawns
         self.frame_counter += 1
