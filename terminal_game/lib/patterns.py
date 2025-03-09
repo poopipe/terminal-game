@@ -26,8 +26,6 @@ class LineVerticalPattern(Pattern):
 
     def generate_pattern(self, base_entity)-> list[Entity]:
         entities = []
-        print(self.base_entity.sprite)
-
         entity_height = base_entity.sprite.bounds.y - 1
         entity_count = self.side_length // entity_height
 

@@ -96,9 +96,6 @@ def add_pattern_to_buffer(s:str, frame_buffer:str, offset:VecT) -> str:
     buffer_len = terminal_size.columns * (terminal_size.lines - 3)
     # process string
     lines = list_str(s)
-    width, height = get_line_bounds(lines)
-
-
     for i in range(len(lines)):
         for c in range(len(lines[i])):
             p = VecT(c, i + 1) + offset 
@@ -109,21 +106,3 @@ def add_pattern_to_buffer(s:str, frame_buffer:str, offset:VecT) -> str:
 
     return frame_buffer[:buffer_len]
 
-
-if __name__ == '__main__':
-    s = """
-┌────────────────────────────────────────────┐
-│░█░█░█▀█░█░█░░░█▀█░█▀▄░█▀▀░░░█▀▄░█▀▀░█▀█░█▀▄│
-│░░█░░█░█░█░█░░░█▀█░█▀▄░█▀▀░░░█░█░█▀▀░█▀█░█░█│
-│░░▀░░▀▀▀░▀▀▀░░░▀░▀░▀░▀░▀▀▀░░░▀▀░░▀▀▀░▀░▀░▀▀░│
-└────────────────────────────────────────────┘"""
-
-    terminal_size = os.get_terminal_size()
-    buffer_len = terminal_size.columns * (terminal_size.lines - 3)
-    frame_buffer =''.join('-' for x in range(buffer_len))
-    print(add_pattern_to_buffer(s, frame_buffer, VecT(43,24)))
-
-
-    
-
-    

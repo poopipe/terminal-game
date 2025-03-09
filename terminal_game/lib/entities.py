@@ -46,7 +46,8 @@ class Player(Entity):
     def move(self, delta:VecT):
         # gravity
         if self.game.frame_counter % 10 == 0:
-           self.move_delta += VecT(0, 1)
+           #self.move_delta += VecT(0, 1)
+           self.move_delta += VecT(0, 0)
         new_position = self.position + self.move_delta
 
         if new_position.x >= 0 and new_position.x < self.game.screen.width:

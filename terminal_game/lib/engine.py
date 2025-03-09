@@ -4,6 +4,7 @@ import threading
 import time
 from enum import Enum
 import random
+from textwrap import wrap 
 
 from pynput import keyboard
 import pywinctl
@@ -33,19 +34,21 @@ class Screen:
     def clear(self):
         print("\033c", end="\033[A")
 
-    def fill(self, c:str = '-')->str:
+
+    def fill(self, c:str = '-') -> str:
         ''' '''
         terminal_size = os.get_terminal_size()
-        s_len = terminal_size.columns * (terminal_size.lines - 3)
+        s_len = self.width * (self.height)
         return ''.join(c for x in range(s_len))
 
     def buffer(self):
         s_len = self.width * (self.height - 4)
         return ''.join(' ' for x in range(s_len))
 
-    def render_frame(self, frame):
+    def render_frame(self, frame): 
         self.clear()
-        print(frame[:self.buffer_len])
+        s = frame[:self.buffer_len]
+        print(s)
 
 
 
@@ -65,13 +68,13 @@ class Game:
 
         # NOTE: debuggery
         self.player_world_bounds = VecT(0,0)
-        self.debug_str = 'ass'
+        self.debug_str = 'debugstr'
 
     def _get_input_listener(self) -> keyboard.Listener:
         return keyboard.Listener(on_press = self.on_press, on_release=self.on_release, suppress=False)
 
     def on_release(self, key):
-        pass 
+        pass
 
     def on_press(self, key):
         # suppress input from other windows 
@@ -99,8 +102,6 @@ class Game:
             if self.mode == 2:
                 if key.char == ('f'):
                     self.mode = 0
-
-
         except Exception as e:
             pass
 
@@ -137,7 +138,6 @@ class Game:
         # do bounds for player and entity overlap
         for entity in self.entities:
             entity_bounds = entity.sprite.bounds + entity.position
-
             # NOTE: y coords increase down the screen
             # bounds.y is bottom
             # bounds.x is right
@@ -148,6 +148,7 @@ class Game:
             is_fully_below = entity_bounds.y - 1 < self.player.position.y
             is_fully_above = entity.position.y + 1 > player_bounds.y 
 
+            '''
             if is_fully_below:
                 self.debug_str = 'below'
             elif is_fully_above:
@@ -158,15 +159,12 @@ class Game:
                 self.debug_str = 'right'
             else:
                 self.debug_str = 'boop'
-
+            '''
             if is_fully_right or is_fully_left or is_fully_above or is_fully_below:
                 continue
             else:
                 collision_objects.append(entity)
-
-
         for o in collision_objects:
-            self.entities.remove(o)
             result = self.player.collide(o)
 
     def process_entities(self):
@@ -206,17 +204,14 @@ class Game:
         self.process_entities()
         # check collisions
         self.check_player_collisions()
-
         # draw other entities
         for entity in self.entities:
             frame_buffer = buffers.add_pattern_to_buffer(entity.sprite.string, frame_buffer, entity.position)
-
         # draw the player
         frame_buffer = buffers.add_pattern_to_buffer(self.player.sprite.string, frame_buffer, self.player.position)
         # render the frame
         self.screen.render_frame(frame_buffer)
-        print('\uee25', self.score, self.player.position, self.player_world_bounds, self.debug_str)
-
+        #print('\uee25', self.score, self.player.position, self.player_world_bounds, self.debug_str)
 
         # NOTE: Frame counter is used to time spawns
         self.frame_counter += 1
@@ -238,7 +233,7 @@ class Game:
         self.frame_counter = 0
         self.score = 0
         self.entities = []
-        self.player.position = VecT(30, 11)
+        self.player.position = VecT(30, 1)
 
     def init(self):
         ''' 
